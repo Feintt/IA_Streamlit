@@ -1,0 +1,32 @@
+Origin,Destino,Peso
+Cozumel,Tampico,1
+Ciudad del Carmen,Cozumel,1
+Angel Albino Corzo,Ciudad del Carmen,1
+Angel Albino Corzo,Minatitlan,1
+Angel Albino Corzo,Acapulco,1
+Minatitlan,Ciudad del Carmen,1
+Minatitlan,Veracruz,1
+Acapulco,Morelia,1
+Acapulco,Uruapan,1
+Puebla,Veracruz,1
+Puebla,Acapulco,1
+CDMX,Acapulco,1
+Morelia,CDMX,1
+Morelia,San Luis Potosi,1
+Uruapan,Culiacan,1
+San Luis Potosi,Abraham Gonzalez,1
+Tampico,Puebla,1
+Tampico,CDMX,1
+Tampico,San Luis Potosi,1
+Piedras Negras,San Luis Potosi,1
+Piedras Negras,Tampico,1
+Culiacan,Piedras Negras,1
+Culiacan,Guaymas,1
+Abraham Gonzalez,Piedras Negras,1
+Nogales,Abraham Gonzalez,1
+Guaymas,Abraham Gonzalez,1
+Guaymas,Nogales,1
+Guaymas,Loreto,1
+Loreto,Manuel Marquez de Leon,1
+Manuel Marquez de Leon,Culiacan,1
+Manuel Marquez de Leon,Los Cabos,1
