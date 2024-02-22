@@ -1,5 +1,3 @@
-
-
 def execution_time(func):
     """
     Decorator that prints the time it takes for a function to execute.
@@ -24,6 +22,26 @@ def extract_nodes_and_edges_from_csv(nodes_path="data/nodes.csv", edges_path="da
     nodes = pd.read_csv(nodes_path)['Node'].tolist()
     edges = pd.read_csv(edges_path)
     return nodes, edges
+
+
+def draw_graph(graph, pos):
+    """
+    Draws the graph with NetworkX and Matplotlib.
+    :param graph:
+    :param pos:
+    :return:
+    """
+
+    import streamlit as st  # Lazy import
+    import networkx as nx  # Lazy import
+    import matplotlib.pyplot as plt  # Lazy import
+    plt.figure(figsize=(10, 7))
+    nx.draw(graph, pos,
+            with_labels=True,
+            node_color='skyblue',
+            node_size=500,
+            edge_color='k')
+    st.pyplot(plt)
 
 
 def generate_graph(nodes, edges):
@@ -112,3 +130,20 @@ def beautify_graph(fig):
                       paper_bgcolor='white',
                       plot_bgcolor='white',
                       font=dict(size=12, color='black'))
+
+
+def get_edge_x_y(pos, graph):
+    """
+    Returns the x and y coordinates of the edges in the graph.
+    :param pos:
+    :param graph:
+    :return:
+    """
+    edge_x = []
+    edge_y = []
+    for edge in graph.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+    return edge_x, edge_y
