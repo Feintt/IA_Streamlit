@@ -2,26 +2,26 @@ from collections import deque
 
 
 def bfs_algorithm(graph, start_node, target_node):
-    # Crear una cola para BFS que almacene los nodos a explorar y el camino hasta cada nodo
+    # Create a queue for BFS that stores the nodes to explore and the path to each node
     queue = deque([(start_node, [start_node])])
 
-    # Conjunto para almacenar los nodos ya visitados
+    # Set to store the nodes already visited
     visited = set()
 
     while queue:
-        # Sacar el primer nodo de la cola
+        # Remove the first node from the queue
         current_node, path = queue.popleft()
 
-        # Si este nodo es el objetivo, regresamos el camino
+        # If this node is the target, return the path
         if current_node == target_node:
             return path
 
-        # Si no, agregamos los vecinos de este nodo a la cola
+        # Otherwise, add the neighbors of this node to the queue
         if current_node not in visited:
             visited.add(current_node)
             for neighbor in graph.neighbors(current_node):
                 if neighbor not in visited:
                     queue.append((neighbor, path + [neighbor]))
 
-    # Si el BFS termina sin encontrar el nodo objetivo
+    # If BFS ends without finding the target node
     return -1

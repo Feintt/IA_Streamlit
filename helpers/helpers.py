@@ -1,4 +1,5 @@
 import time
+import pandas as pd
 
 
 def execution_time(func):
@@ -14,3 +15,12 @@ def execution_time(func):
         return result
 
     return wrapper
+
+
+def extract_nodes_and_edges_from_csv(file_path):
+    """
+    Extracts the nodes and edges from a CSV file and returns them as lists.
+    """
+    nodes = pd.read_csv(file_path + "nodes.csv")
+    edges = pd.read_csv(file_path + "edges.csv")
+    return nodes, edges

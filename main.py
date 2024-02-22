@@ -5,24 +5,19 @@ import streamlit as st
 import plotly.graph_objects as go
 from helpers.algorithms import bfs_algorithm
 
-# Assuming bfs_algorithm is correctly defined in helpers/algorithms.py
-
 # Read the CSV of nodes
 nodes = pd.read_csv("data/nodes.csv")
-nodes_list = nodes['Node'].tolist()  # 'Nodo' changed to 'Node'
-
-# Read the CSV of edges with weights
-edges_with_weights = pd.read_csv("data/edges_with_weights.csv")  # 'df_aristas' changed to 'edges_with_weights'
+edges_with_weights = pd.read_csv("data/edges_with_weights.csv")
+nodes_list = nodes['Node'].tolist()
 
 # Create a simple graph with NetworkX
 Graph = nx.DiGraph()
 Graph.add_nodes_from(nodes_list)
 Graph.add_weighted_edges_from(
     [(row['Origin'], row['Destination'], row['Weight']) for index, row in edges_with_weights.iterrows()])
-# Changed 'Destino' to 'Destination' and 'Peso' to 'Weight'
 
 # Generate a fixed layout for the nodes
-pos = nx.kamada_kawai_layout(Graph)  # The seed argument ensures consistency in positions
+pos = nx.kamada_kawai_layout(Graph)
 
 # Streamlit configuration
 st.title("Graph Explorer")
@@ -32,11 +27,6 @@ plt.figure(figsize=(10, 7))
 nx.draw(Graph, pos, with_labels=True, node_color='skyblue', node_size=500, edge_color='k')
 st.pyplot(plt)
 
-# Read the CSV of nodes and edges
-nodes = pd.read_csv("data/nodes.csv")
-edges_with_weights = pd.read_csv("data/edges_with_weights.csv")
-nodes_list = nodes['Node'].tolist()
-
 # Streamlit configuration
 st.title("Select nodes to find a path")
 
@@ -44,34 +34,34 @@ start_node = st.selectbox('Start node:', nodes_list)
 target_node = st.selectbox('Target node:', nodes_list)
 path = bfs_algorithm(Graph, start_node, target_node)
 
-# Prepare data for Plotly
+# Prepare data for Plotly graph
 edge_x = []
 edge_y = []
 for edge in Graph.edges():
     x0, y0 = pos[edge[0]]
     x1, y1 = pos[edge[1]]
-    edge_x.append(x0)
-    edge_x.append(x1)
-    edge_x.append(None)  # Necessary to create line segments between nodes
-    edge_y.append(y0)
-    edge_y.append(y1)
-    edge_y.append(None)
+    edge_x.extend([x0, x1, None])
+    edge_y.extend([y0, y1, None])
 
 node_x = [pos[node][0] for node in Graph.nodes()]
 node_y = [pos[node][1] for node in Graph.nodes()]
+node_degree = [Graph.degree(node) for node in Graph.nodes()]
 
-# Create figure
+# Create a figure
 fig = go.Figure()
 
-# Add edges as lines
-fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=0.5, color='#888'), hoverinfo='none', mode='lines'))
+# Add edges as lines with improved styling
+fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', line=dict(width=2, color='grey'), hoverinfo='none'))
 
-# Add nodes as points
-fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', hoverinfo='text',
-                         marker=dict(showscale=True, colorscale='YlGnBu', color=[], size=10),
-                         text=[node for node in Graph.nodes()]))
+# Add nodes with a color scale based on their degree
+fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers+text', text=[node for node in Graph.nodes()],
+                         textposition="bottom center",
+                         marker=dict(size=[(deg + 1) * 5 for deg in node_degree], color=node_degree, colorscale='Blues',
+                                     showscale=True, colorbar=dict(title='Node Degree')),
+                         hoverinfo='text',
+                         hovertext=[f'{node}<br>Degree: {deg}' for node, deg in zip(Graph.nodes(), node_degree)]))
 
-# Highlight the found path, if it exists
+# Highlight the found path, if it exists, with better visibility
 if path != -1:
     path_edges = zip(path, path[1:])
     path_x = []
@@ -81,14 +71,18 @@ if path != -1:
         x1, y1 = pos[edge[1]]
         path_x.extend([x0, x1, None])
         path_y.extend([y0, y1, None])
-    fig.add_trace(go.Scatter(x=path_x, y=path_y, mode='lines', line=dict(color='firebrick', width=2), hoverinfo='none'))
+    fig.add_trace(go.Scatter(x=path_x, y=path_y, mode='lines', line=dict(color='firebrick', width=3), hoverinfo='none'))
 
-# Update layout for better visualization
-fig.update_layout(showlegend=False, hovermode='closest',
-                  margin=dict(b=0, l=0, r=0, t=0), xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                  yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+# Update the layout for a more polished look
+fig.update_layout(title_text='Interactive Network Graph', title_x=0.5, title_font_size=24,
+                  showlegend=False, hovermode='closest',
+                  margin=dict(b=20, l=20, r=20, t=40),
+                  xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                  yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                  paper_bgcolor='white', plot_bgcolor='white',
+                  font=dict(size=12, color='black'))
 
-# Display figure in Streamlit
+# Display the updated figure in Streamlit
 st.plotly_chart(fig, use_container_width=True)
 
 # Show information about the found path
