@@ -1,0 +1,32 @@
+Origin,Destination,Weight
+Cozumel,Tampico,17
+Ciudad del Carmen,Cozumel,15
+Angel Albino Corzo,Ciudad del Carmen,11
+Angel Albino Corzo,Minatitlan,15
+Angel Albino Corzo,Acapulco,1
+Minatitlan,Ciudad del Carmen,16
+Minatitlan,Veracruz,18
+Acapulco,Morelia,14
+Acapulco,Uruapan,14
+Puebla,Veracruz,12
+Puebla,Acapulco,19
+CDMX,Acapulco,4
+Morelia,CDMX,15
+Morelia,San Luis Potosi,11
+Uruapan,Culiacan,15
+San Luis Potosi,Abraham Gonzalez,15
+Tampico,Puebla,7
+Tampico,CDMX,8
+Tampico,San Luis Potosi,11
+Piedras Negras,San Luis Potosi,11
+Piedras Negras,Tampico,16
+Culiacan,Piedras Negras,8
+Culiacan,Guaymas,16
+Abraham Gonzalez,Piedras Negras,15
+Nogales,Abraham Gonzalez,6
+Guaymas,Abraham Gonzalez,18
+Guaymas,Nogales,5
+Guaymas,Loreto,13
+Loreto,Manuel Marquez de Leon,15
+Manuel Marquez de Leon,Culiacan,14
+Manuel Marquez de Leon,Los Cabos,10
