@@ -1,6 +1,8 @@
 def execution_time(func):
     """
-    Decorator that prints the time it takes for a function to execute.
+    Decorator to measure the execution time of a function.
+    :param func:
+    :return:
     """
 
     def wrapper(*args, **kwargs):
@@ -16,7 +18,10 @@ def execution_time(func):
 
 def extract_nodes_and_edges_from_csv(nodes_path="data/nodes.csv", edges_path="data/edges_with_weights.csv"):
     """
-    Extracts the nodes and edges from a CSV file and returns them as lists.
+    Extracts the nodes and edges from the CSV files.
+    :param nodes_path:
+    :param edges_path:
+    :return:
     """
     import pandas as pd  # Lazy import
     nodes = pd.read_csv(nodes_path)['Node'].tolist()
@@ -47,12 +52,16 @@ def draw_graph(graph, pos):
 def generate_graph(nodes, edges):
     """
     Generates a graph with NetworkX.
+    :param nodes:
+    :param edges:
+    :return:
     """
+
     import networkx as nx  # Lazy import
     graph = nx.DiGraph()
     graph.add_nodes_from(nodes)
     graph.add_weighted_edges_from(
-        [(row['Origin'], row['Destination'], row['Weight']) for index, row in edges.iterrows()])
+        [(row['Origin'], row['Destination'], row['Weight']) for _index, row in edges.iterrows()])
     return graph
 
 
@@ -147,3 +156,72 @@ def get_edge_x_y(pos, graph):
         edge_x.extend([x0, x1, None])
         edge_y.extend([y0, y1, None])
     return edge_x, edge_y
+
+
+def create_figure_with_highlighted_path(graph, pos, edge_x, edge_y, node_x, node_y, node_degree, path):
+    """
+    Creates a figure with the graph and the highlighted path.
+    :param graph:
+    :param pos:
+    :param edge_x:
+    :param edge_y:
+    :param node_x:
+    :param node_y:
+    :param node_degree:
+    :param path:
+    :return:
+    """
+    import plotly.graph_objects as go  # Lazy import
+    fig = go.Figure()
+    add_edges_to_plotly_graph(fig, edge_x, edge_y)
+    add_color_to_nodes(fig, node_x, node_y, node_degree, graph)
+    highlight_path(path, pos, fig)
+    beautify_graph(fig)
+    return fig
+
+
+def create_figure(graph, edge_x, edge_y, node_x, node_y, node_degree):
+    """
+    Creates a figure with the graph.
+    :param graph:
+    :param edge_x:
+    :param edge_y:
+    :param node_x:
+    :param node_y:
+    :param node_degree:
+    :return:
+    """
+    import plotly.graph_objects as go  # Lazy import
+    fig = go.Figure()
+    add_edges_to_plotly_graph(fig, edge_x, edge_y)
+    add_color_to_nodes(fig, node_x, node_y, node_degree, graph)
+    beautify_graph(fig)
+    return fig
+
+
+def display_algorithm_results(algorithm_name, path, graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
+                              target_node):
+    """
+    Displays the results of the algorithm in the Streamlit app.
+    :param algorithm_name:
+    :param path:
+    :param graph:
+    :param pos:
+    :param edge_x:
+    :param edge_y:
+    :param node_x:
+    :param node_y:
+    :param node_degree:
+    :param start_node:
+    :param target_node:
+    :return:
+    """
+    import streamlit as st  # Lazy import
+    st.title(f"{algorithm_name} algorithm")
+    if path != -1:
+        fig = create_figure_with_highlighted_path(graph, pos, edge_x, edge_y, node_x, node_y, node_degree, path)
+        st.write(f"Path found from {start_node} to {target_node}: {' -> '.join(path)}")
+    else:
+        fig = create_figure(graph, pos, edge_x, edge_y, node_x, node_y)
+        st.write("No path found.")
+    st.plotly_chart(fig, use_container_width=True)
