@@ -1,6 +1,6 @@
 import networkx as nx
 import streamlit as st
-from helpers.algorithms import bfs_algorithm, dijkstra_algorithm, dfs_algorithm
+from helpers.algorithms import bfs_algorithm, dijkstra_algorithm, dfs_algorithm, dfs_with_limit
 from helpers import *
 
 # Read the CSV of nodes
@@ -27,6 +27,8 @@ bfs_path = bfs_algorithm(Graph, start_node, target_node)
 dijkstra_path = dijkstra_algorithm(Graph, start_node, target_node)
 # Find the path with DFS
 dfs_path = dfs_algorithm(Graph, start_node, target_node)
+# Find the path with DLS
+dls_path = dfs_with_limit(Graph, start_node, target_node, 5)
 
 # Prepare the edges for Plotly
 edge_x, edge_y = get_edge_x_y(pos, Graph)
@@ -37,6 +39,11 @@ node_degree = [Graph.degree(node) for node in Graph.nodes()]
 # Display the results
 # Assuming bfs_path, dijkstra_path, dfs_path are already defined along with
 # Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node, target_node
-display_algorithm_results("BFS", bfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node, target_node)
-display_algorithm_results("Dijkstra's", dijkstra_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node, target_node)
-display_algorithm_results("DFS", dfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node, target_node)
+display_algorithm_results("BFS", bfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
+                          target_node)
+display_algorithm_results("Dijkstra's", dijkstra_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree,
+                          start_node, target_node)
+display_algorithm_results("DFS", dfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
+                          target_node)
+display_algorithm_results("DLS", dls_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
+                          target_node)
