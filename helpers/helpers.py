@@ -1,17 +1,22 @@
-def execution_time(func):
+import time
+
+
+def time_function(func):
     """
-    Decorator to measure the execution time of a function.
+    Decorator to measure the time a function takes to execute.
     :param func:
     :return:
     """
 
     def wrapper(*args, **kwargs):
-        import time  # Lazy import
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"The function {func.__name__} took {end - start} seconds to execute.")
-        return result
+        start_time = time.time()
+        result = func(*args, **kwargs)  # Call the original function and store its result
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"Function {func.__name__} took {duration} seconds.")
+        if isinstance(result, tuple):
+            return *result, duration
+        return result, duration  # Return a tuple containing the original result and the duration
 
     return wrapper
 
@@ -100,7 +105,8 @@ def reconstruct_path(graph, orig, dest, plot=False, algorithm=None):
         speeds.append(graph.edges[(prev, curr, 0)]["maxspeed"])
         style_path_edge(graph, (prev, curr, 0))
         if algorithm:
-            graph.edges[(prev, curr, 0)][f"{algorithm}_uses"] = graph.edges[(prev, curr, 0)].get(f"{algorithm}_uses", 0) + 1
+            graph.edges[(prev, curr, 0)][f"{algorithm}_uses"] = graph.edges[(prev, curr, 0)].get(f"{algorithm}_uses",
+                                                                                                 0) + 1
         curr = prev
     dist /= 1000
     if plot:

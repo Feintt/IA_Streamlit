@@ -1,8 +1,10 @@
 import heapq
 from helpers import *
 from collections import deque
+from helpers import time_function
 
 
+@time_function
 def bfs(graph, orig, dest, plot=False):
     # Initialize all nodes: unvisited, infinite distance, no previous node, and default size
     for node in graph.nodes:
@@ -47,6 +49,7 @@ def bfs(graph, orig, dest, plot=False):
             step += 1
 
 
+@time_function
 def dijkstra(graph, orig, dest, plot=False):
     for node in graph.nodes:
         graph.nodes[node]["visited"] = False
@@ -86,6 +89,7 @@ def dijkstra(graph, orig, dest, plot=False):
         step += 1
 
 
+@time_function
 def dfs(graph, orig, dest, plot=False):
     # Initialize all nodes: unvisited, infinite distance, no previous node, and default size
     for node in graph.nodes:
@@ -131,6 +135,7 @@ def dfs(graph, orig, dest, plot=False):
             step += 1
 
 
+@time_function
 def dfs_with_limit(graph, orig, dest, limit, plot=False):
     """
     Perform depth-first search on a graph from orig to dest with a depth limit.
@@ -187,6 +192,7 @@ def dfs_with_limit(graph, orig, dest, limit, plot=False):
     return False, step
 
 
+@time_function
 def iterative_deepening_dfs(graph, orig, dest, plot=False):
     """
     Perform an iterative deepening depth-first search from orig to dest.
