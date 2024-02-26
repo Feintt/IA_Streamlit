@@ -1,27 +1,44 @@
-from helpers.algorithms import *
-from helpers import *
-import osmnx as ox
-import pandas as pd
-import streamlit as st
+from helpers.algorithms import *  # Import all the algorithms from the helpers module
+from helpers import *  # Import all the functions from the helpers module
+import osmnx as ox  # Import the OSMnx library for street network analysis
+import pandas as pd  # Import the pandas library for data manipulation
+import streamlit as st  # Import the Streamlit library for app creation
 
 # Sidebar for Place Input
+# <----------------------------------------------------------------------------->
+
+
+# Este campo de texto permite al usuario ingresar el lugar que desea graficar.
+# Consideraciones:
+# - El lugar debe estar en el formato "Ciudad, País" (sin comillas).
+# - El lugar debe estar en la base de datos de OpenStreetMap.
+# - Ejemplos válidos: "Benito Juarez, Mexico", "New York, USA", "Paris, France".
+# - Ejemplos inválidos: "Marte", "Atlántida, Océano Atlántico", "Narnia".
 place_name = st.sidebar.text_input("Place Name:", value="Benito Juarez, Mexico",
                                    help="Input the place you want to graph.")
-# Sidebar for Pathfinding Settings
+
+# Este campo de texto permite al usuario ingresar el límite de profundidad para la búsqueda con límite de profundidad.
+# Consideraciones:
+# - El límite de profundidad debe ser un número entero mayor o igual a cero.
+# - Si no se especifica un límite de profundidad, no se ejecutará la búsqueda con límite de profundidad.
+# - Ejemplos válidos: 0, 1, 2, 3, 4, 5, ...
+# - Ejemplos inválidos: -1, 1.5, 2.718, "infinito", ...
+# - El valor por defecto es 5.
 limit = st.sidebar.number_input('Depth Limit:', min_value=0, value=5, step=1,
                                 help="Set the maximum depth for depth-limited search.")
+# <----------------------------------------------------------------------------->
 
-metrics = {
-
-}
+# Global variables
+metrics = {}  # Dictionary to store the metrics of each algorithm
 
 # Attempt to load the graph for the specified place
 try:
-    Graph = ox.graph_from_place(place_name, network_type="drive")
-    clean_graph(Graph)
-    nodes_ready = True
+    Graph = ox.graph_from_place(place_name, network_type="drive")  # Load the graph for the specified place
+    clean_graph(Graph)  # Clean the graph to remove unnecessary attributes
+    nodes_ready = True  # Set the flag to indicate that the nodes are ready
 except Exception as e:
     st.sidebar.error("Could not load graph for the specified place. Please try a different location.")
+    st.sidebar.error(e)
     nodes_ready = False
 
 if nodes_ready:
