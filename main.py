@@ -1,49 +1,133 @@
-import networkx as nx
 import streamlit as st
-from helpers.algorithms import bfs_algorithm, dijkstra_algorithm, dfs_algorithm, dfs_with_limit
+from helpers.algorithms import *
 from helpers import *
+import osmnx as ox
 
-# Read the CSV of nodes
-nodes, edges_with_weights = extract_nodes_and_edges_from_csv()
+# Sidebar for Place Input
+place_name = st.sidebar.text_input("Place Name:", value="Benito Juarez, Mexico",
+                                   help="Input the place you want to graph.")
+# Sidebar for Pathfinding Settings
+limit = st.sidebar.number_input('Depth Limit:', min_value=0, value=5, step=1,
+                                help="Set the maximum depth for depth-limited search.")
 
-# Create a simple graph with NetworkX
-Graph = generate_graph(nodes, edges_with_weights)
+# Attempt to load the graph for the specified place
+try:
+    Graph = ox.graph_from_place(place_name, network_type="drive")
+    clean_graph(Graph)
+    nodes_ready = True
+except Exception as e:
+    st.sidebar.error("Could not load graph for the specified place. Please try a different location.")
+    nodes_ready = False
 
-# Generate a fixed layout for the nodes
-pos = nx.kamada_kawai_layout(Graph)
+if nodes_ready:
+    # Sidebar for Node Selection
+    st.sidebar.title("Pathfinding Settings")
+    start_node = st.sidebar.selectbox('Start Node:', list(Graph.nodes))
+    target_node = st.sidebar.selectbox('Target Node:', list(Graph.nodes))
 
-# Show the graph with Matplotlib
-st.title("Graph Explorer")
-draw_graph(Graph, pos)
+    # Main Interface - Tabs for Each Algorithm
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["Dijkstra", "BFS", "DFS", "DLS", "IDDFS"])
 
-# Select nodes to find a path
-st.title("Select nodes to find a path")
-start_node = st.selectbox('Start node:', nodes)
-target_node = st.selectbox('Target node:', nodes)
+    with tab1:
+        st.header("Dijkstra's Algorithm")
+        # Create two columns for the plots
+        col1, col2 = st.columns(2)
 
-# Find the path with BFS
-bfs_path = bfs_algorithm(Graph, start_node, target_node)
-# Find the path with Dijkstra
-dijkstra_path = dijkstra_algorithm(Graph, start_node, target_node)
-# Find the path with DFS
-dfs_path = dfs_algorithm(Graph, start_node, target_node)
-# Find the path with DLS
-dls_path = dfs_with_limit(Graph, start_node, target_node, 5)
+        with col1:
+            st.write("Visited Nodes")
+            iterations = dijkstra(Graph, start_node, target_node, plot=True)
+            st.write(f"Number of iterations: {iterations}")
 
-# Prepare the edges for Plotly
-edge_x, edge_y = get_edge_x_y(pos, Graph)
-node_x = [pos[node][0] for node in Graph.nodes()]
-node_y = [pos[node][1] for node in Graph.nodes()]
-node_degree = [Graph.degree(node) for node in Graph.nodes()]
+        with col2:
+            st.write("Shortest Path")
+            distance, average_speed, total_time = reconstruct_path(Graph, start_node, target_node, plot=True)
+            st.write(f"Distance: {distance} km")
+            st.write(f"Average Speed: {average_speed} m/s")
+            st.write(f"Total Time: {total_time} minutes")
 
-# Display the results
-# Assuming bfs_path, dijkstra_path, dfs_path are already defined along with
-# Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node, target_node
-display_algorithm_results("BFS", bfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
-                          target_node)
-display_algorithm_results("Dijkstra's", dijkstra_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree,
-                          start_node, target_node)
-display_algorithm_results("DFS", dfs_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
-                          target_node)
-display_algorithm_results("DLS", dls_path, Graph, pos, edge_x, edge_y, node_x, node_y, node_degree, start_node,
-                          target_node)
+    with tab2:
+        st.header("Breadth-First Search (BFS)")
+
+        # Create two columns for the plots
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Visited Nodes")
+            iterations = bfs(Graph, start_node, target_node, plot=True)
+            st.write(f"Number of iterations: {iterations}")
+
+        with col2:
+            st.write("Shortest Path")
+            distance, average_speed, total_time = reconstruct_path(Graph, start_node, target_node, plot=True)
+            st.write(f"Distance: {distance} km")
+            st.write(f"Average Speed: {average_speed} m/s")
+            st.write(f"Total Time: {total_time} minutes")
+
+    with tab3:
+        st.header("Depth-First Search (DFS)")
+
+        # Create two columns for the plots
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Visited Nodes")
+            iterations = dfs(Graph, start_node, target_node, plot=True)
+            st.write(f"Number of iterations: {iterations}")
+
+        with col2:
+            st.write("Shortest Path")
+            distance, average_speed, total_time = reconstruct_path(Graph, start_node, target_node, plot=True)
+            st.write(f"Distance: {distance} km")
+            st.write(f"Average Speed: {average_speed} m/s")
+            st.write(f"Total Time: {total_time} minutes")
+
+    with tab4:
+        found = False
+        st.header("Depth-Limited Search (DLS)")
+
+        # Indicate if the limit is not set; otherwise, run the DLS
+        if limit is None:
+            st.write("Please set a depth limit.")
+        else:
+            # Create two columns for the plots
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.write("Visited Nodes")
+                # Assuming dls_plot is a function that plots the graph showing visited nodes
+                found, steps = dfs_with_limit(Graph, start_node, target_node, limit, plot=True)
+                st.write(f"Number of iterations: {steps}")
+
+            with col2:
+                st.write("Shortest Path")
+                if found:
+                    distance, average_speed, total_time = reconstruct_path(Graph, start_node, target_node, plot=True)
+                    st.write(f"Distance: {distance} km")
+                    st.write(f"Average Speed: {average_speed} m/s")
+                    st.write(f"Total Time: {total_time} minutes")
+                else:
+                    st.write("No path found within the depth limit.")
+
+    with tab5:
+        found = False
+        st.header("Iterative Depth-First Search (Iterative DFS)")
+
+        # Create two columns for the plots
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Visited Nodes")
+            iterations = iterative_deepening_dfs(Graph, start_node, target_node, plot=True)
+            st.write(f"Number of iterations: {iterations}")
+
+        with col2:
+            st.write("Shortest Path")
+            distance, average_speed, total_time = reconstruct_path(Graph, start_node, target_node, plot=True)
+            st.write(f"Distance: {distance} km")
+            st.write(f"Average Speed: {average_speed} m/s")
+            st.write(f"Total Time: {total_time} minutes")
+
+    # Repeat the pattern for A*, Bellman-Ford, Floyd-Warshall, and your custom algorithm
+else:
+    st.error("Please specify a valid location to generate the graph.")

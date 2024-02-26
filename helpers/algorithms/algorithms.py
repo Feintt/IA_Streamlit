@@ -1,143 +1,257 @@
-from heapq import heappop, heappush
+import heapq
+from helpers import *
 from collections import deque
 
 
-def bfs_algorithm(graph, start_node, target_node):
-    """
-    Breadth-first search algorithm to find a path between two nodes in a graph
-    :param graph:
-    :param start_node:
-    :param target_node:
-    :return:
-    """
-    # Create a queue for BFS that stores the nodes to explore and the path to each node
-    queue = deque([(start_node, [start_node])])
+def bfs(graph, orig, dest, plot=False):
+    # Initialize all nodes: unvisited, infinite distance, no previous node, and default size
+    for node in graph.nodes:
+        graph.nodes[node]["visited"] = False
+        graph.nodes[node]["distance"] = float("inf")
+        graph.nodes[node]["previous"] = None
+        graph.nodes[node]["size"] = 0
 
-    # Set to store the nodes already visited
-    visited = set()
+    # Style edges as unvisited
+    for edge in graph.edges:
+        style_unvisited_edge(graph, edge)
+
+    # Set the origin node's distance to 0 and adjust its size for visualization
+    graph.nodes[orig]["distance"] = 0
+    graph.nodes[orig]["size"] = 50
+    graph.nodes[dest]["size"] = 50
+
+    # Use a deque as a FIFO queue for BFS
+    queue = deque([orig])
+    step = 0
 
     while queue:
-        # Remove the first node from the queue
-        current_node, path = queue.popleft()
+        node = queue.popleft()  # Dequeue the next node to process
+        if node == dest:  # Check if the destination has been reached
+            if plot:
+                plot_graph(graph)  # Plot the graph if requested
+                return step
+            return
 
-        # If this node is the target, return the path
-        if current_node == target_node:
-            return path
+        if not graph.nodes[node]["visited"]:  # Process node if it hasn't been visited
+            graph.nodes[node]["visited"] = True
+            for edge in graph.out_edges(node):
+                style_visited_edge(graph, (edge[0], edge[1], 0))  # Style visited edges
+                neighbor = edge[1]
+                if not graph.nodes[neighbor]["visited"]:
+                    graph.nodes[neighbor]["distance"] = graph.nodes[node]["distance"] + 1  # Increment distance
+                    graph.nodes[neighbor]["previous"] = node  # Set the path to reach this neighbor
+                    queue.append(neighbor)  # Enqueue the neighbor for processing
+                    for edge2 in graph.out_edges(neighbor):
+                        style_active_edge(graph,
+                                          (edge2[0], edge2[1], 0))  # Optional: style edges leading from active nodes
+            step += 1
 
-        # Otherwise, add the neighbors of this node to the queue
-        if current_node not in visited:
-            visited.add(current_node)
-            for neighbor in graph.neighbors(current_node):
-                if neighbor not in visited:
-                    queue.append((neighbor, path + [neighbor]))
 
-    # If BFS ends without finding the target node
-    return -1
+def dijkstra(graph, orig, dest, plot=False):
+    for node in graph.nodes:
+        graph.nodes[node]["visited"] = False
+        graph.nodes[node]["distance"] = float("inf")
+        graph.nodes[node]["previous"] = None
+        graph.nodes[node]["size"] = 0
+
+    for edge in graph.edges:
+        style_unvisited_edge(graph, edge)
+
+    graph.nodes[orig]["distance"] = 0
+    graph.nodes[orig]["size"] = 50
+    graph.nodes[dest]["size"] = 50
+
+    pq = [(0, orig)]
+    step = 0
+
+    while pq:
+        _, node = heapq.heappop(pq)
+        if node == dest:
+            if plot:
+                plot_graph(graph)
+                return step
+            return
+        if graph.nodes[node]["visited"]: continue
+        graph.nodes[node]["visited"] = True
+        for edge in graph.out_edges(node):
+            style_visited_edge(graph, (edge[0], edge[1], 0))
+            neighbor = edge[1]
+            weight = graph.edges[(edge[0], edge[1], 0)]["weight"]
+            if graph.nodes[neighbor]["distance"] > graph.nodes[node]["distance"] + weight:
+                graph.nodes[neighbor]["distance"] = graph.nodes[node]["distance"] + weight
+                graph.nodes[neighbor]["previous"] = node
+                heapq.heappush(pq, (graph.nodes[neighbor]["distance"], neighbor))
+                for edge2 in graph.out_edges(neighbor):
+                    style_active_edge(graph, (edge2[0], edge2[1], 0))
+        step += 1
 
 
-def dfs_algorithm(graph, start_node, target_node):
-    """
-    Depth-first search algorithm to find a path between two nodes in a graph
-    :param graph:
-    :param start_node:
-    :param target_node:
-    :return:
-    """
-    # Stack to store the nodes to explore along with the path taken to reach them
-    stack = [(start_node, [start_node])]
+def dfs(graph, orig, dest, plot=False):
+    # Initialize all nodes: unvisited, infinite distance, no previous node, and default size
+    for node in graph.nodes:
+        graph.nodes[node]["visited"] = False
+        graph.nodes[node]["distance"] = float("inf")
+        graph.nodes[node]["previous"] = None
+        graph.nodes[node]["size"] = 0
 
-    # Set to store the nodes already visited to avoid cycles
-    visited = set()
+    # Style edges as unvisited
+    for edge in graph.edges:
+        style_unvisited_edge(graph, edge)
+
+    # Set the origin node's distance to 0 and adjust its size for visualization
+    graph.nodes[orig]["distance"] = 0
+    graph.nodes[orig]["size"] = 50
+    graph.nodes[dest]["size"] = 50
+
+    # Use a stack as a LIFO queue for DFS
+    stack = [orig]
+    step = 0
 
     while stack:
-        # Pop the last added node from the stack
-        current_node, path = stack.pop()
+        node = stack.pop()  # Pop the last node to process
 
-        # If this node is the target, return the path
-        if current_node == target_node:
-            return path
+        if node == dest:  # Check if the destination has been reached
+            if plot:
+                plot_graph(graph)
+                return step
+            return
 
-        # Mark the node as visited
-        if current_node not in visited:
-            visited.add(current_node)
+        if not graph.nodes[node]["visited"]:
+            graph.nodes[node]["visited"] = True
+            for edge in graph.out_edges(node):
+                style_visited_edge(graph, (edge[0], edge[1], 0))  # Style visited edges
+                neighbor = edge[1]
+                if not graph.nodes[neighbor]["visited"]:
+                    graph.nodes[neighbor]["distance"] = graph.nodes[node]["distance"] + 1  # Increment distance
+                    graph.nodes[neighbor]["previous"] = node  # Set the path to reach this neighbor
+                    stack.append(neighbor)  # Push the neighbor for processing
+                    for edge2 in graph.out_edges(neighbor):
+                        style_active_edge(graph,
+                                          (edge2[0], edge2[1], 0))  # Optional: style edges leading from active nodes
+            step += 1
 
-            # Add the neighbors to the stack
-            for neighbor in graph.neighbors(current_node):
-                if neighbor not in visited:
-                    stack.append((neighbor, path + [neighbor]))
 
-    # If DFS ends without finding the target node
-    return -1
-
-
-def dijkstra_algorithm(graph, start_node, target_node):
+def dfs_with_limit(graph, orig, dest, limit, plot=False):
     """
-    Dijkstra's algorithm to find the shortest path between two nodes in a graph
-    :param graph:
-    :param start_node:
-    :param target_node:
-    :return:
+    Perform depth-first search on a graph from orig to dest with a depth limit.
+
+    :param graph: Graph object containing nodes and edges.
+    :param orig: Starting node.
+    :param dest: Destination node.
+    :param limit: Maximum depth to search.
+    :param plot: If True, plot the graph once the destination is found or the limit is reached.
     """
-    # Priority queue to store (distance, node, path) tuples
-    priority_queue = [(0, start_node, [start_node])]
+    # Initialize all nodes: unvisited, infinite distance, no previous node, and default size
+    for node in graph.nodes:
+        graph.nodes[node]["visited"] = False
+        graph.nodes[node]["distance"] = float("inf")
+        graph.nodes[node]["previous"] = None
+        graph.nodes[node]["size"] = 0
 
-    # Dictionary to store the shortest distance from start_node to every other node
-    distances = {node: float('infinity') for node in graph.nodes}
-    distances[start_node] = 0
+    # Style edges as unvisited
+    for edge in graph.edges:
+        style_unvisited_edge(graph, edge)
 
-    # Set to store visited nodes
-    visited = set()
+    # Set the origin node's distance to 0 and adjust its size for visualization
+    graph.nodes[orig]["distance"] = 0
+    graph.nodes[orig]["size"] = 50
+    graph.nodes[dest]["size"] = 50
 
-    while priority_queue:
-        # Pop the node with the smallest distance
-        current_distance, current_node, path = heappop(priority_queue)
+    # Use a stack as a LIFO queue for DFS, including the current depth
+    stack = [(orig, 0)]  # (node, depth)
+    step = 0
 
-        # If target node is reached, return the path
-        if current_node == target_node:
-            return path
+    while stack:
+        node, depth = stack.pop()  # Pop the last node to process along with its depth
 
-        if current_node in visited:
-            continue
+        if node == dest:  # Check if the destination has been reached
+            if plot:
+                plot_graph(graph)
+            return True, step
 
-        visited.add(current_node)
+        if depth <= limit and not graph.nodes[node]["visited"]:
+            graph.nodes[node]["visited"] = True
+            for edge in graph.out_edges(node):
+                style_visited_edge(graph, (edge[0], edge[1], 0))  # Style visited edges
+                neighbor = edge[1]
+                if not graph.nodes[neighbor]["visited"]:
+                    graph.nodes[neighbor]["distance"] = graph.nodes[node]["distance"] + 1  # Increment distance
+                    graph.nodes[neighbor]["previous"] = node  # Set the path to reach this neighbor
+                    stack.append((neighbor, depth + 1))  # Push the neighbor and the next depth for processing
+                    for edge2 in graph.out_edges(neighbor):
+                        style_active_edge(graph,
+                                          (edge2[0], edge2[1], 0))  # Optional: style edges leading from active nodes
+            step += 1
 
-        for neighbor in graph.neighbors(current_node):
-            # Calculate new distance
-            weight = graph[current_node][neighbor].get('weight', 1)  # Default weight is 1 if not specified
-            new_distance = current_distance + weight
-
-            if new_distance < distances[neighbor]:
-                distances[neighbor] = new_distance
-                heappush(priority_queue, (new_distance, neighbor, path + [neighbor]))
-
-    # If Dijkstra's algorithm ends without finding the target node
-    return -1
+    plot_graph(graph)
+    return False, step
 
 
-def dfs_with_limit(graph, start_node, target_node, limit):
+def iterative_deepening_dfs(graph, orig, dest, plot=False):
     """
-    Perform a depth-first search up to a given limit.
+    Perform an iterative deepening depth-first search from orig to dest.
 
-    :param graph: NetworkX graph
-    :param start_node: Node to start the search from
-    :param target_node: Search target node
-    :param limit: Maximum depth limit for the search
-    :return: Path as a list if found, otherwise -1
+    :param graph: Graph object containing nodes and edges.
+    :param orig: The starting node.
+    :param dest: The destination node.
+    :param plot: Boolean to indicate whether to plot the graph.
     """
+    # Initialize the depth limit starting from 0 and incrementally increase
+    depth_limit = 0
 
-    def dfs_recursive(node, target, depth_limit, path, visited):
-        if node == target:  # Target found
-            return path
-        if depth_limit <= 0:  # Depth limit reached
-            return None
-        visited.add(node)
-        for neighbor in graph.neighbors(node):
-            if neighbor not in visited:
-                result_path = dfs_recursive(neighbor, target, depth_limit - 1, path + [neighbor], visited)
-                if result_path is not None:
-                    return result_path
-        return None
+    while True:  # Keep increasing the depth limit until the destination is found
+        # Reinitialize all nodes for each iteration
+        for node in graph.nodes:
+            graph.nodes[node]["visited"] = False
+            graph.nodes[node]["distance"] = float("inf")
+            graph.nodes[node]["previous"] = None
+            graph.nodes[node]["size"] = 0
 
-    visited = set()
-    path = dfs_recursive(start_node, target_node, limit, [start_node], visited)
-    return path if path is not None else -1
+        # Style edges as unvisited
+        for edge in graph.edges:
+            style_unvisited_edge(graph, edge)
+
+        # Set the origin node's distance to 0 and adjust its size for visualization
+        graph.nodes[orig]["distance"] = 0
+        graph.nodes[orig]["size"] = 50
+        graph.nodes[dest]["size"] = 50
+
+        # Initialize the stack with the starting node and its initial depth
+        stack = [(orig, 0)]
+        step = 0
+        path_found = False
+
+        while stack:
+            node, depth = stack.pop()
+
+            if depth > depth_limit:
+                continue  # Skip processing this node if it exceeds the current depth limit
+
+            if node == dest:
+                if plot:
+                    plot_graph(graph)
+                path_found = True
+                break  # Exit the loop if destination is found
+
+            if not graph.nodes[node]["visited"]:
+                graph.nodes[node]["visited"] = True
+                for edge in graph.out_edges(node):
+                    neighbor = edge[1]
+                    if not graph.nodes[neighbor]["visited"]:
+                        graph.nodes[neighbor]["distance"] = graph.nodes[node]["distance"] + 1
+                        graph.nodes[neighbor]["previous"] = node
+                        stack.append((neighbor, depth + 1))  # Push the neighbor with incremented depth
+                        style_visited_edge(graph, (edge[0], edge[1], 0))  # Style visited edges
+                        for edge2 in graph.out_edges(neighbor):
+                            style_active_edge(graph, (edge2[0], edge2[1], 0))
+                step += 1
+
+        if path_found:
+            break  # Break the outer loop if the path has been found
+        depth_limit += 1  # Increase the depth limit for the next iteration
+
+    if not path_found and plot:
+        print("No path found within the given depth.")
+        plot_graph(graph)
+
+    return step
